@@ -1,0 +1,85 @@
+install
+cmdline
+reboot
+keyboard us
+lang en_US.UTF-8
+timezone UTC
+network --bootproto=dhcp --device=eth0 --onboot=on
+rootpw --iscrypted $6$t5nrfmzb2CiWcTA7$12PVlif6C2cS8pEFhVAlFqOewvj0UlCe0czyOEeVzIrpc7UEqu0kFITHgK9pL.xjxPURA4YCqmkagFa6E6IEt0
+firewall --disabled
+selinux --permissive
+services --enabled chronyd
+skipx
+bootloader --timeout=1 --append="xen_blkfront.sda_is_xvda=1 serial=tty0 console=ttyS0,115200n8 zswap.enabled=1"
+clearpart --all
+zerombr
+part / --size 1536 --grow --fstype xfs
+
+url --url=@INSTALL_TREE@
+repo --name updates --baseurl=@UPDATES_MIRROR@
+repo --name epel --baseurl=@EPEL_MIRROR@
+
+user --name=jenkins --groups=mock --homedir /srv/jenkins
+
+%packages --instLangs=en
+createrepo
+mock
+policycoreutils-python
+sudo
+yum-utils
+-yum-plugin-fastestmirror
+
+epel-release
+cloud-init
+%end
+
+%post --erroronfail --log=/root/kickstart-post.log
+set -x
+
+# Configure ttys
+cat > /etc/init/ttyS0.conf <<EOF
+stop on runlevel[016]
+start on runlevel[345]
+respawn
+instance /dev/ttyS0
+exec /sbin/mingetty /dev/ttyS0
+EOF
+
+# Configure cloud-init
+cat > /etc/cloud/cloud.cfg <<EOF
+user: jenkins
+disable_root: 1
+ssh_pwauth:   0
+mounts:
+ - [ ephemeral0, /srv/jenkins ]
+ - [ swap, none, swap, sw, 0, 0 ]
+cc_ready_cmd: ['/bin/true']
+locale_configfile: /etc/sysconfig/i18n
+mount_default_fields: [~, ~, 'auto', 'defaults,nofail', '0', '2']
+ssh_deletekeys:   0
+ssh_genkeytypes:  ~
+ssh_svcname:      sshd
+syslog_fix_perms: ~
+cloud_init_modules:
+ - bootcmd
+ - resizefs
+ - set_hostname
+ - rsyslog
+ - ssh
+cloud_config_modules:
+ - mounts
+ - locale
+ - set-passwords
+ - timezone
+ - runcmd
+cloud_final_modules:
+ - scripts-per-once
+ - scripts-per-boot
+ - scripts-per-instance
+ - scripts-user
+ - keys-to-console
+ - final-message
+EOF
+%end
+
+#vim: set syntax=kickstart:

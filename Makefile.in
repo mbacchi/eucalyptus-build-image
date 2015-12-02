@@ -1,0 +1,64 @@
+CPUS   ?= 1
+MEMORY ?= 2048
+DISK   ?= 4
+
+distdir = @PACKAGE_TARNAME@-@PACKAGE_VERSION@
+prefix = @prefix@
+datarootdir = @datarootdir@
+datadir = @datadir@
+imagedir = @datadir@/eucalyptus/service-images
+
+define destroyvm
+virsh undefine $<; virsh destroy $<; true
+endef
+
+.PHONY: all build clean dist distclean distdir euimage install
+
+all: build
+
+build: euimage
+
+build/image/centos-7-builder.raw: centos-7-builder.ks
+	mkdir -p build/image
+	$(destroyvm)
+	@PYTHON@ -c 'import pty, sys; pty.spawn(sys.argv[1:])' \
+		@VIRT_INSTALL@ --name $< \
+		--initrd-inject $< \
+		--os-variant rhel7 \
+		--extra-args ks="file:/$< console=ttyS0,115200 serial" \
+		--location @INSTALL_TREE@ \
+		--disk $@,size=$(DISK) \
+		--vcpus $(CPUS) --ram $(MEMORY) \
+		--graphics none \
+		--hvm --accelerate --noreboot \
+		</dev/null | cat; STATUS=$$?; $(destroyvm); exit $$STATUS
+	@VIRT_SYSPREP@ -a $@
+	@VIRT_SPARSIFY@ $@ $@.sparse
+	mv $@.sparse $@
+
+euimage: build/image/centos-7-builder.raw centos-7-builder.yml
+	euimage-pack-image $^
+
+distdir: configure configure.ac centos-7-builder.ks.in centos-7-builder.yml Makefile.in
+	rm -rf $(distdir)
+	mkdir -p $(distdir)
+	cp -pR $^ $(distdir)
+
+dist: distdir
+	mkdir -p dist
+	tar -cJ -f dist/$(distdir).tar.xz $(distdir)
+	rm -rf $(distdir)
+
+clean:
+	rm -rf build
+	rm -rf dist
+	rm -f  *.euimage
+	rm -rf $(distdir)
+
+distclean: clean
+	rm -f  Makefile
+	rm -rf autom4te.cache
+	rm -f  config.log
+	rm -f  config.status
+	rm -f  *.euimage
+	rm -f  *.ks

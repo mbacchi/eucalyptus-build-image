@@ -1,0 +1,8 @@
+*.euimage
+*.ks
+Makefile
+build/
+config.log
+config.status
+configure
+dist/
