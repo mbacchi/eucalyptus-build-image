@@ -5,7 +5,8 @@ keyboard us
 lang en_US.UTF-8
 timezone UTC
 network --bootproto=dhcp --device=eth0 --onboot=on
-rootpw --iscrypted $6$t5nrfmzb2CiWcTA7$12PVlif6C2cS8pEFhVAlFqOewvj0UlCe0czyOEeVzIrpc7UEqu0kFITHgK9pL.xjxPURA4YCqmkagFa6E6IEt0
+authconfig --enableshadow --passalgo=sha512
+rootpw --iscrypted $6$OeV7FnQ9.T.pecld$Rab/mXpQRe0kKW3m3L1uPVZWvRZezT4j8mMtn7wgJp/eZlpsroKEz8LRYTHX6Yg5hl90yMYZ4lcoUwXYcf8R10
 firewall --disabled
 selinux --permissive
 services --enabled chronyd
@@ -27,6 +28,8 @@ mock
 policycoreutils-python
 sudo
 yum-utils
+nfs-utils
+wget
 -yum-plugin-fastestmirror
 
 epel-release
@@ -80,6 +83,12 @@ cloud_final_modules:
  - keys-to-console
  - final-message
 EOF
+
+# make /srv/release mount point
+mkdir /srv/release
+
+# add jenkins user to sudoers
+echo "jenkins ALL=(ALL)    NOPASSWD: ALL" >> /etc/sudoers
 %end
 
 #vim: set syntax=kickstart:
