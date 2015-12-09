@@ -19,17 +19,17 @@ url --url=@INSTALL_TREE@
 repo --name updates --baseurl=@UPDATES_MIRROR@
 repo --name epel --baseurl=@EPEL_MIRROR@
 
-user --name=jenkins --groups=mock,wheel --homedir /srv/jenkins
+user --name=jenkins --groups=mock --homedir /var/lib/jenkins
 
 %packages --instLangs=en
+cloud-utils-growpart
 createrepo
+git
+java-1.7.0-openjdk
 mock
 policycoreutils-python
-sudo
+xfsprogs
 yum-utils
-java-1.7.0-openjdk
-git
-cloud-utils-growpart
 -yum-plugin-fastestmirror
 
 epel-release
@@ -92,8 +92,14 @@ cloud_final_modules:
  - final-message
 EOF
 
-# add jenkins user to sudoers
-echo "jenkins ALL=(ALL)    NOPASSWD: ALL" >> /etc/sudoers
+# Configure mock
+cat > /etc/mock/site-defaults.cfg <<EOF
+config_opts['basedir']      = '/srv/jenkins/mock/build'
+config_opts['cache_topdir'] = '/srv/jenkins/mock/cache'
+config_opts['use_host_resolv'] = False
+config_opts['macros']['%vendor'] = "Hewlett Packard Enterprise"
+EOF
+
 %end
 
 #vim: set syntax=kickstart:
