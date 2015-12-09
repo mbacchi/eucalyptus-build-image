@@ -53,7 +53,6 @@ cat > /etc/cloud/cloud.cfg <<EOF
 #cloud-config
 debug:
   verbose: true
-  output: {all: '| tee -a /var/log/cloud-init-output.log'}
 user: jenkins
 disable_root: 1
 ssh_pwauth:   0
