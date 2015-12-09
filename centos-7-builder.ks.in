@@ -5,8 +5,7 @@ keyboard us
 lang en_US.UTF-8
 timezone UTC
 network --bootproto=dhcp --device=eth0 --onboot=on
-authconfig --enableshadow --passalgo=sha512
-rootpw --iscrypted $6$OeV7FnQ9.T.pecld$Rab/mXpQRe0kKW3m3L1uPVZWvRZezT4j8mMtn7wgJp/eZlpsroKEz8LRYTHX6Yg5hl90yMYZ4lcoUwXYcf8R10
+rootpw --iscrypted $6$t5nrfmzb2CiWcTA7$12PVlif6C2cS8pEFhVAlFqOewvj0UlCe0czyOEeVzIrpc7UEqu0kFITHgK9pL.xjxPURA4YCqmkagFa6E6IEt0
 firewall --disabled
 selinux --permissive
 services --enabled chronyd
@@ -20,7 +19,7 @@ url --url=@INSTALL_TREE@
 repo --name updates --baseurl=@UPDATES_MIRROR@
 repo --name epel --baseurl=@EPEL_MIRROR@
 
-user --name=jenkins --groups=mock --homedir /srv/jenkins
+user --name=jenkins --groups=mock,wheel --homedir /srv/jenkins
 
 %packages --instLangs=en
 createrepo
@@ -28,8 +27,9 @@ mock
 policycoreutils-python
 sudo
 yum-utils
-nfs-utils
-wget
+java-1.7.0-openjdk
+git
+cloud-utils-growpart
 -yum-plugin-fastestmirror
 
 epel-release
@@ -50,12 +50,18 @@ EOF
 
 # Configure cloud-init
 cat > /etc/cloud/cloud.cfg <<EOF
+#cloud-config
+debug:
+  verbose: true
+  output: {all: '| tee -a /var/log/cloud-init-output.log'}
 user: jenkins
 disable_root: 1
 ssh_pwauth:   0
 mounts:
  - [ ephemeral0, /srv/jenkins ]
  - [ swap, none, swap, sw, 0, 0 ]
+resize_rootfs: true
+resize_rootfs_tmp: /dev
 cc_ready_cmd: ['/bin/true']
 locale_configfile: /etc/sysconfig/i18n
 mount_default_fields: [~, ~, 'auto', 'defaults,nofail', '0', '2']
@@ -65,11 +71,13 @@ ssh_svcname:      sshd
 syslog_fix_perms: ~
 cloud_init_modules:
  - bootcmd
+ - growpart
  - resizefs
  - set_hostname
  - rsyslog
  - ssh
 cloud_config_modules:
+ - disk_setup
  - mounts
  - locale
  - set-passwords
@@ -83,9 +91,6 @@ cloud_final_modules:
  - keys-to-console
  - final-message
 EOF
-
-# make /srv/release mount point
-mkdir /srv/release
 
 # add jenkins user to sudoers
 echo "jenkins ALL=(ALL)    NOPASSWD: ALL" >> /etc/sudoers

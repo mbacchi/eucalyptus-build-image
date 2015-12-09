@@ -20,9 +20,6 @@ build: euimage
 
 build/image/centos-7-builder.raw: centos-7-builder.ks
 	mkdir -p build/image
-	sed -i.bak 's/^#user = "root"/user = "root"/' /etc/libvirt/qemu.conf
-	sed -i.bak 's/^#group = "root"/group = "root"/' /etc/libvirt/qemu.conf
-	systemctl restart libvirtd.service
 	$(destroyvm)
 	@PYTHON@ -c 'import pty, sys; pty.spawn(sys.argv[1:])' \
 		@VIRT_INSTALL@ --name $< \
