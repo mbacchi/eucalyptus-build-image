@@ -1,4 +1,4 @@
-AC_INIT([eucalyptus-build-image], [2])
+AC_INIT([eucalyptus-build-image], [3])
 
 INSTALL_TREE=http://linux.mirrors.es.net/centos/7/os/x86_64/
 BASE_MIRROR=${INSTALL_TREE}

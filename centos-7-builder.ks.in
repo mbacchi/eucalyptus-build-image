@@ -56,9 +56,6 @@ debug:
 user: jenkins
 disable_root: 1
 ssh_pwauth:   0
-mounts:
- - [ ephemeral0, /srv/jenkins ]
- - [ swap, none, swap, sw, 0, 0 ]
 resize_rootfs: true
 resize_rootfs_tmp: /dev
 cc_ready_cmd: ['/bin/true']
@@ -98,7 +95,6 @@ config_opts['cache_topdir'] = '/srv/jenkins/mock/cache'
 config_opts['use_host_resolv'] = False
 config_opts['macros']['%vendor'] = "Hewlett Packard Enterprise"
 EOF
-
 %end
 
 #vim: set syntax=kickstart:
