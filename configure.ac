@@ -24,6 +24,7 @@ AC_PATH_PROG(VIRT_SPARSIFY, virt-sparsify)
 AC_CONFIG_FILES([
     Makefile
     centos-7-builder.ks
+    centos-7-builder.yml
 ])
 AC_SUBST(INSTALL_TREE)
 AC_SUBST(BASE_MIRROR)

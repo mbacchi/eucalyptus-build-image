@@ -1,5 +1,5 @@
 name: centos-7-builder
-version: 2
+version: @PACKAGE_VERSION@
 release: 1
 arch: x86_64
 description: The CentOS 7-based Eucalyptus Build System worker image
