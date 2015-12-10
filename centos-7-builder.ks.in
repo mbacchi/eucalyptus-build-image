@@ -23,11 +23,13 @@ user --name=jenkins --groups=mock --homedir /var/lib/jenkins
 
 %packages --instLangs=en
 cloud-utils-growpart
+chrony
 createrepo
 git
 java-1.7.0-openjdk
 mock
 policycoreutils-python
+rpm-build
 xfsprogs
 yum-utils
 -yum-plugin-fastestmirror
