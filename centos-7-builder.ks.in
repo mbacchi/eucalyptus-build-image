@@ -32,6 +32,10 @@ policycoreutils-python
 rpm-build
 xfsprogs
 yum-utils
+pexpect
+PyYAML
+createrepo_c
+autoconf
 -yum-plugin-fastestmirror
 
 epel-release
